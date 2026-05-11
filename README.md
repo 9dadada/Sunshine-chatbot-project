@@ -9,14 +9,14 @@ Sensor Reading        Message Relay    DB + RAG           Chatbot + Graph
 
 ---
 
-## 📍 This Repository
+## This Repository
 
 This repo covers the **Raspberry Pi sensor node** part of the system.  
 It measures the plant environment every 5 minutes and publishes the data to the backend via MQTT.
 
 ---
 
-## 📦 Sensors
+## Sensors
 
 | Sensor | Measurement | Connection |
 |--------|------------|------------|
@@ -26,7 +26,7 @@ It measures the plant environment every 5 minutes and publishes the data to the 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 plant_project/
 ├── config.py          
 ├── main.py            
@@ -40,7 +40,7 @@ plant_project/
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ```bash
 # Activate virtual environment
@@ -52,7 +52,7 @@ python main.py
 
 ---
 
-## 📡 MQTT Payload
+## MQTT Payload
 
 ```json
 {
