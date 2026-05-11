@@ -1,9 +1,9 @@
 """
-센서 측정
+Sensor measurements
 rule
-- 측정 주기 : 5분
-- 측정 지속 시간 : 10초
-- 센서 측정 간격 : 2초
+- measurement interval : 5분
+- measurement duration : 10초
+-  : 2초
 - 성공한 측정값들의 평균 반환
 - 평균값 반환
 - 평균값이 null이면 실패
