@@ -1,8 +1,8 @@
 """
-MQTT 발행 모듈
-- 브로커 연결
-- 측정 데이터를 페이로드로 만들어 publish
-- reading_id 자동 생성
+MQTT publish module
+- connection with broker
+- creat payload and publish
+- reading_id automatic generation
 """
 import json
 from datetime import datetime
@@ -19,28 +19,28 @@ class MQTTPublisher:
         )
 
     def connect(self):
-        """브로커 연결"""
+        """connection with broker"""
         print(f"[MQTT] Broker connecting: {config.MQTT_BROKER}:{config.MQTT_PORT}")
         self.client.connect(config.MQTT_BROKER, config.MQTT_PORT, config.MQTT_KEEPALIVE)
         self.client.loop_start()
         print("[MQTT] Connected")
 
     def disconnect(self):
-        """브로커 연결 해제"""
+        """disconnection"""
         self.client.loop_stop()
         self.client.disconnect()
         print("[MQTT] Disconnected")
 
     def _generate_reading_id(self):
-        """reading_id 생성: rdg-{device_id}-{YYYYMMDDTHHMMSS}"""
+        """Generate reading_id: rdg-{device_id}-{YYYYMMDDTHHMMSS}"""
         timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
         return f"rdg-{config.DEVICE_ID}-{timestamp}"
 
     def publish_measurement(self, measurement_data):
         """
-        측정 데이터를 받아 페이로드 조립 후 publish
+        create paylaod and publish
         
-        measurement_data: measurement.py의 perform_measurement() 결과
+        measurement_data: measurement.py의 perform_measurement() result
             {
                 "measured_at": "...",
                 "temperature_c": ...,
@@ -54,7 +54,7 @@ class MQTTPublisher:
             "reading_id": self._generate_reading_id(),
             "device_id": config.DEVICE_ID,
             "plant_id": config.PLANT_ID,
-            **measurement_data,  # measured_at + 4개 측정값
+            **measurement_data,  # measured_at + 4 measurement values
         }
 
         print(f"[MQTT] Topic: {config.MQTT_TOPIC}")
@@ -76,12 +76,12 @@ class MQTTPublisher:
             return False
 
 
-# 모듈 단독 실행 테스트
+# test code
 if __name__ == "__main__":
     print("MQTTPublisher Test")
     print("=" * 50)
     
-    # 가짜 측정 데이터로 테스트
+    # fake data test
     fake_data = {
         "measured_at": datetime.now().astimezone().isoformat(),
         "temperature_c": 24.5,
