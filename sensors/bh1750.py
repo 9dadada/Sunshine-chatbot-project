@@ -40,4 +40,4 @@ if __name__ == "__main__":
                 print("measurement failure")
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\ncleanup")
+        print("\n interrupt")
