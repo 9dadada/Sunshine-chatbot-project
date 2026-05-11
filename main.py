@@ -1,6 +1,6 @@
 """
 Main module of communication
-communication interval : 5분
+communication interval : 5 min
 MQTT protocols
 """
 
@@ -17,7 +17,7 @@ def main():
     print("Sunshine sensor system start")
     print(f"   Device ID: {config.DEVICE_ID}")
     print(f"   Plant ID: {config.PLANT_ID}")
-    print(f"   측정 주기: {config.SENDING_INTERVAL_MINUTES}분마다")
+    print(f"   sending interval: {config.SENDING_INTERVAL_MINUTES}min")
     print("=" * 60)
     
     # Creat object
