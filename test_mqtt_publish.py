@@ -9,9 +9,8 @@ from datetime import datetime
 # === 연결 정보 ===
 BROKER_HOST = "broker.hivemq.com"  # 공개 브로커
 BROKER_PORT = 1883
-TOPIC = "sunshine/test/dahye-001"  # 다혜님 전용 토픽
-
-# === MQTT 클라이언트 만들기 ===
+TOPIC = "sunshine/test/dahye-001"  
+# === MQTT 클라이언트===
 client = mqtt.Client(
     callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
     client_id="rpi-test-dahye-001"
@@ -50,9 +49,9 @@ result = client.publish(
 result.wait_for_publish(timeout=2)
 
 if result.is_published():
-    print("\n✅ 메시지 발행 성공!")
+    print("\n 메시지 발행 성공!")
 else:
-    print("\n❌ 메시지 발행 실패")
+    print("\n 메시지 발행 실패")
 
 # 정리
 client.loop_stop()
