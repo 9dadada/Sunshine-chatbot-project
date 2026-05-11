@@ -1,9 +1,9 @@
 """
 Sensor measurements
 rule
-- sending interval : 5분
-- measurement duration : 10초
-- measurement interval : 2초
+- sending interval : 5 min
+- measurement duration : 10 sec
+- measurement interval : 2 sec
 - Return mean value
 - if mean value = null -> failure
 """
