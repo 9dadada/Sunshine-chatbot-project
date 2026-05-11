@@ -47,4 +47,4 @@ if __name__ == "__main__":
             time.sleep(2)
     except KeyboardInterrupt:
         sensor.cleanup()
-        print("\cleanup")
+        print("\n cleanup")
