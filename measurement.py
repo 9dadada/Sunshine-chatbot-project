@@ -1,12 +1,11 @@
 """
 Sensor measurements
 rule
-- measurement interval : 5분
+- sending interval : 5분
 - measurement duration : 10초
--  : 2초
-- 성공한 측정값들의 평균 반환
-- 평균값 반환
-- 평균값이 null이면 실패
+- measurement interval : 2초
+- Return mean value
+- if mean value = null -> failure
 """
 import time
 from datetime import datetime
@@ -23,26 +22,26 @@ class Measurement:
         self.soil_sensor = SoilHumiditySensor()
 
     def perform_measurement(self):
-        # 루프용 time
+        # time for roop
         start_time = time.time()
         end_time = start_time + config.MEASUREMENT_DURATION
 
-        # 전송용 time : ISO 8601 형식
+        # time for transmit: ISO 8601
         measured_at = datetime.now().astimezone().isoformat()
 
-        # 측정값 저장용 리스트
+        # storage list
         temp = []
         humid = []
         light = []
         soil_humid = []
 
         while time.time() < end_time:
-            # 센서 함수 호출
+            # call sensor func
             dht22_temp, dht22_humid = self.dht22.read()
             bh1750_light = self.bh1750.read()
             soil_humid_value = self.soil_sensor.read()
 
-            # 측정값이 None이 아니면 리스트에 추가
+            # if value is not None add in list
             if dht22_temp is not None:
                 temp.append(dht22_temp)
             if dht22_humid is not None:
@@ -52,10 +51,10 @@ class Measurement:
             if soil_humid_value is not None:
                 soil_humid.append(soil_humid_value)
             
-            # 센서 측정 간격
+            # measurement interval
             time.sleep(config.MEASUREMENT_INTERVAL_SECONDS)
 
-        #평균값
+        # calculate mean value
         send_temp = round(sum(temp) / len(temp), 1) if temp else None
         send_humid = round(sum(humid) / len(humid), 1) if humid else None
         send_light = round(sum(light) / len(light), 1) if light else None
@@ -69,15 +68,15 @@ class Measurement:
                 "soil_moisture_pct": send_soil_humid
                 }
 
-    # 모듈 단독 실행 테스트
+    # test code
 if __name__ == "__main__":
     import json
     
-    print("Measurement 테스트")
+    print("Measurement test")
     print("=" * 50)
     
     service = Measurement()
     result = service.perform_measurement()
     
-    print("\n[결과]")
+    print("\n[result]")
     print(json.dumps(result, indent=2, ensure_ascii=False))
