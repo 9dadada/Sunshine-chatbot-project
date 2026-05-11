@@ -1,7 +1,7 @@
 """
-통신 메인 모듈
-통신 주기 : 5분
-MQTT 프로토콜 사용
+Main module of communication
+communication interval : 5분
+MQTT protocols
 """
 
 import time
@@ -20,11 +20,11 @@ def main():
     print(f"   측정 주기: {config.SENDING_INTERVAL_MINUTES}분마다")
     print("=" * 60)
     
-    # 객체 생성
+    # Creat object
     measurement_service = Measurement()
     publisher = MQTTPublisher()
     
-    # MQTT 연결 (한 번만)
+    # MQTT connection
     publisher.connect()
     
     def measure_and_publish():
@@ -32,13 +32,13 @@ def main():
         data = measurement_service.perform_measurement()
         publisher.publish_measurement(data)
     
-    # 시작하자마자 한 번 측정
+    # measurement
     measure_and_publish()
     
-    # 5분마다 반복 스케줄
+    # scheduling (per 5 minutes)
     schedule.every(config.SENDING_INTERVAL_MINUTES).minutes.do(measure_and_publish)
     
-    # 메인 루프
+    # main roop
     try:
         while True:
             schedule.run_pending()
