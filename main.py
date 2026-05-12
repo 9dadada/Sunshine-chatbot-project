@@ -5,32 +5,52 @@ MQTT protocols
 """
 
 import time
+import logging
+import logging.handlers
 import schedule
-
 from measurement import Measurement
 from mqtt_client import MQTTPublisher
 import config
 
+# Logging setup
+logging.basicConfig(
+	level = config.LOG_LEVEL,
+	format = "%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.handlers.RotatingFileHandler(
+            config.LOG_FILE,
+            maxBytes = 10*1024*1024,  # 10MB
+            backupCount = 3
+            ),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 
 def main():
-    print("=" * 60)
-    print("Sunshine sensor system start")
-    print(f"   Device ID: {config.DEVICE_ID}")
-    print(f"   Plant ID: {config.PLANT_ID}")
-    print(f"   sending interval: {config.SENDING_INTERVAL_MINUTES}min")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Sunshine sensor system start")
+    logger.info(f"   Device ID: {config.DEVICE_ID}")
+    logger.info(f"   Plant ID: {config.PLANT_ID}")
+    logger.info(f"   sending interval: {config.SENDING_INTERVAL_MINUTES}min")
+    logger.info("=" * 60)
     
     # Creat object
     measurement_service = Measurement()
     publisher = MQTTPublisher()
     
-    # MQTT connection
-    publisher.connect()
+    # MQTT connection + error handling
+    if not publisher.connect():
+        logger.error("Failed to connect to MQTT broker. Exiting.")
+        return
     
     def measure_and_publish():
-        print(f"\n[{time.strftime('%H:%M:%S')}] Measurement start")
+        logger.info("Measurement start")
         data = measurement_service.perform_measurement()
-        publisher.publish_measurement(data)
+        result = publisher.publish_measurement(data)
+        if not result:
+            logger.error("Publish failed. Will retry next cycle.")
     
     # measurement
     measure_and_publish()
@@ -44,13 +64,13 @@ def main():
             schedule.run_pending()
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n\n[Exit request detected]")
+        logger.info("Exit request detected")
     finally:
         # Cleanup
-        print("[Cleanup] Cleaning up resources...")
+        logger.info("Cleaning up resources...")
         measurement_service.dht22.cleanup()
         publisher.disconnect()
-        print("[Cleanup] Done")
+        logger.info("Cleanup done")
 
 
 if __name__ == "__main__":

@@ -8,12 +8,15 @@ rule
 - if mean value = null -> failure
 """
 import time
+import logging
 from datetime import datetime
 
 from sensors.dht22 import DHT22Sensor
 from sensors.bh1750 import BH1750Sensor
 from sensors.soil_humid import SoilHumiditySensor
 import config
+
+logger = logging.getLogger(__name__)
 
 class Measurement:
     def __init__(self):
@@ -60,7 +63,12 @@ class Measurement:
         send_light = round(sum(light) / len(light), 1) if light else None
         send_soil_humid = round(sum(soil_humid) / len(soil_humid), 1) if soil_humid else None
 
-        return {
+        if send_temp is None: logger.warning("Temperature measurement failed")
+        if send_humid is None: logger.warning("Humidity measurement failed")
+        if send_light is None: logger.warning("Light measurement failed")
+        if send_soil_humid is None: logger.warning("Soil humidity measurement failed")
+
+        result = {
                 "measured_at": measured_at,
                 "temperature_c": send_temp,
                 "humidity_pct": send_humid,
@@ -68,15 +76,7 @@ class Measurement:
                 "soil_moisture_pct": send_soil_humid
                 }
 
-    # test code
-if __name__ == "__main__":
-    import json
-    
-    print("Measurement test")
-    print("=" * 50)
-    
-    service = Measurement()
-    result = service.perform_measurement()
-    
-    print("\n[result]")
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+        logger.debug(f"Measurement result: {result}")
+        return result
+        
+   

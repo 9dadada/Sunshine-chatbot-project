@@ -1,6 +1,7 @@
 """
 Project Global Settings
 """
+import logging
 
 # Device Identification
 DEVICE_ID = "rpi-edge-node-01"
@@ -11,6 +12,7 @@ MQTT_BROKER = "broker.hivemq.com"  #"mock"  # temporary
 MQTT_PORT = 1883
 MQTT_KEEPALIVE = 60
 MQTT_QOS = 1
+MAX_RETRIES = 3
 
 # Topic
 # automatic generation
@@ -27,3 +29,8 @@ SENDING_INTERVAL_MINUTES = 0.5
 # self-measurement in air and water condition
 SOIL_AIR_VALUE = 54260   # in the air = 0%
 SOIL_WATER_VALUE = 24920  # in the water = 100%
+
+# Logging settings
+LOG_FILE = "sunshine.log"
+LOG_LEVEL = logging.DEBUG  ## LOG_LEVEL = logging.WARNING
+
