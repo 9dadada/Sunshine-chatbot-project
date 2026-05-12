@@ -27,6 +27,7 @@ It measures the plant environment every 5 minutes and publishes the data to the 
 ---
 
 ## Project Structure
+```
 plant_project/
 ├── config.py          
 ├── main.py            
@@ -37,7 +38,7 @@ plant_project/
 │   ├── bh1750.py
 │   └── soil_humid.py
 └── requirements.txt
-
+```
 ---
 
 ## Getting Started
