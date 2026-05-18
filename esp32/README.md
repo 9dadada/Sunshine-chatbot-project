@@ -130,18 +130,32 @@ All tunables sit at the top of [`boot.py`](boot.py):
 | `connect_wifi(ssid, password)` | Activate STA, connect, wait up to 15 s, on failure fall back to portal. |
 | `start_captive_portal()` | AP + DNS + HTTP server loop. Saves credentials and reboots on form POST. |
 
+### Measurement loop (`main.py`)
+Runs immediately after `boot.py` returns. One measurement per wake cycle:
+verify Wi-Fi, read the soil ADC, publish to MQTT, then deep-sleep for 5 minutes
+(or until the button is pressed).
+
+| Function | Purpose |
+|---|---|
+| `check_button()` | One-shot button read. Used to allow an immediate user-driven deep-sleep. |
+| `go_deepsleep()` | Configure EXT0 wake on the button pin, then `deepsleep(SLEEP_MS)`. |
+| `read_soil()` | 10-sample ADC read on `SOIL_PIN`, averaged and mapped to 0–100 % using `AIR_VAL` / `WATER_VAL` calibration constants. |
+| `get_wlan()` | Return the active STA WLAN if it has an IP; otherwise `None`. |
+| `get_timestamp()` / `get_reading_id()` | Build the ISO-8601 timestamp and a unique `reading_id` for the MQTT payload. |
+| `publish(soil_moisture_pct)` | Connect to the MQTT broker, publish a JSON reading, disconnect. |
+
 ---
 
 ## Flashing
 
 1. Flash MicroPython onto the ESP32 (see [docs.micropython.org/en/latest/esp32/tutorial/intro.html](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html)).
-2. Copy `boot.py` to the device root with `mpremote` or Thonny:
+2. Copy `boot.py` and `main.py` to the device root with `mpremote` or Thonny:
    ```
    mpremote cp boot.py :boot.py
+   mpremote cp main.py :main.py
    ```
-3. Add `main.py` for sensor measurement (not yet in this folder).
-4. Reset the device. On first boot the LED blinks and the captive portal comes up;
-   on subsequent boots it auto-connects to the saved network.
+3. Reset the device. On first boot the LED blinks and the captive portal comes up;
+   on subsequent boots it auto-connects to the saved network and `main.py` takes over.
 
 ---
 
