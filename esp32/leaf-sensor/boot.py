@@ -1,4 +1,4 @@
-# esp32-soil-01
+# esp32-leaf-01
 # booting code
 
 import os
@@ -10,7 +10,7 @@ import esp32
 from machine import Pin, PWM, Timer
 
 # config
-AP_NAME        = "Sunshine-Soil-Setup"
+AP_NAME        = "Sunshine-Leaf-Setup"
 BUTTON_PIN     = 32
 LONG_PRESS_MS  = 3000
 DEBOUNCE_MS    = 50

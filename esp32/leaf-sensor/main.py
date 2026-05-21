@@ -1,9 +1,10 @@
-# esp32-soil-01
+# esp32-leaf-01
 # main code
 
 import time
+import dht
 import machine
-from machine import Pin, ADC, deepsleep
+from machine import Pin, I2C, deepsleep
 import network
 import ujson
 import ubinascii
@@ -11,19 +12,21 @@ import ntptime
 from umqtt.simple import MQTTClient
 import esp32
 
+from bh1750 import BH1750
 from logger import append_data
 
 # config
-DEVICE_ID      = "esp32-soil-01"
-PLANT_ID       = "plant-001" 
+DEVICE_ID      = "esp32-leaf-01"
+PLANT_ID       = "plant-001"
 MQTT_BROKER    = "3.26.39.221"
 MQTT_PORT      = 1883
 MQTT_TOPIC     = f"sensor/readings/{DEVICE_ID}"
 SLEEP_MS       = 5 * 60 * 1000  # 5min
 
-SOIL_PIN       = 34
-AIR_VAL        = 3400
-WATER_VAL      = 1465
+DHT_PIN        = 4
+I2C_SDA        = 21
+I2C_SCL        = 22
+BH1750_ADDR    = 0x23
 
 BUTTON_PIN     = 32
 
@@ -41,23 +44,21 @@ def go_deepsleep():
     deepsleep(SLEEP_MS)
 
 # sensor
-def read_soil():
-    adc = ADC(Pin(SOIL_PIN))
-    adc.atten(ADC.ATTN_11DB)
+def read_dht():
+    # DHT22: needs >=2s between measurements (handled by deepsleep cycle)
+    sensor = dht.DHT22(Pin(DHT_PIN))
+    sensor.measure()
+    temp = sensor.temperature()
+    hum  = sensor.humidity()
+    print(f"DHT22 temp: {temp:.1f}C, hum: {hum:.1f}%")
+    return round(temp, 1), round(hum, 1)
 
-    # average of 10 readings
-    readings = []
-    for _ in range(10):
-        readings.append(adc.read())
-        time.sleep(1)
-    raw = sum(readings) // len(readings)
-
-    # 0~100%
-    pct = (AIR_VAL - raw) / (AIR_VAL - WATER_VAL) * 100
-    pct = max(0.0, min(100.0, pct))
-
-    print(f"Soil raw: {raw}, moisture: {pct:.1f}%")
-    return round(pct, 1)
+def read_light():
+    i2c = I2C(0, sda=Pin(I2C_SDA), scl=Pin(I2C_SCL), freq=100000)
+    sensor = BH1750(i2c, addr=BH1750_ADDR)
+    lux = sensor.read_lux()
+    print(f"BH1750 light: {lux:.1f} lx")
+    return round(lux, 1)
 
 # Wi-Fi
 def get_wlan():
@@ -74,18 +75,20 @@ def get_timestamp():
     )
 
 def get_reading_id():
-    t = time.localtime(time.time() + 9 * 3600) # KST
+    t = time.localtime(time.time() + 9 * 3600)  # KST
     return "rdg-{}-{:04d}{:02d}{:02d}T{:02d}{:02d}{:02d}".format(
         DEVICE_ID, t[0], t[1], t[2], t[3], t[4], t[5]
     )
 
-def make_payload(soil_moisture_pct):
+def make_payload(temperature_c, humidity_pct, light_lux):
     return ujson.dumps({
         "reading_id": get_reading_id(),
         "device_id": DEVICE_ID,
         "plant_id": PLANT_ID,
         "measured_at": get_timestamp(),
-        "soil_moisture_pct": soil_moisture_pct
+        "temperature_c": temperature_c,
+        "humidity_pct": humidity_pct,
+        "light_lux": light_lux
     })
 
 def publish(payload):
@@ -114,10 +117,11 @@ if not wlan:
 sync_time()
 
 # sensor measurement
-soil_moisture_pct = read_soil()
+temperature_c, humidity_pct = read_dht()
+light_lux = read_light()
 
 # build payload + local backup (always saved)
-payload = make_payload(soil_moisture_pct)
+payload = make_payload(temperature_c, humidity_pct, light_lux)
 append_data(payload)
 
 # MQTT publish (retry once on failure)
